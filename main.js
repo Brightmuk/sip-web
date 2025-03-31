@@ -63,9 +63,9 @@ const CONFIG = {
         async configureSIP(formData) {
             this.credentials = {
                 username: formData.sipUsername.value,
-                domain: "127.0.0.1",
+                domain: formData.sipDomain.value,
                 password: 1234,
-                wssServer: "wss://demo-server-uzwr.onrender.com"
+                wssServer: "wss://"+formData.sipDomain.value+formData.sipPort.value
             };
 
             UI.username.textContent = this.credentials.username;
