@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>SIP.js WebRTC</title>
+  <meta name="description" content="WebRTC video conference implementation using SIP.js v16">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+      font-size: 13px !important;
+    }
+
+    body {
+      background-color: #f4f4f4;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #3b82f6;
+      padding: 10px 20px;
+      color: white;
+    }
+
+    .navbar .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .navbar .call-status {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .call-status .call-info {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .navbar .user {
+      display: flex;
+      align-items: center;
+    }
+
+    .user .status-indicator {
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    /* Main Layout */
+    #main {
+      display: flex;
+      margin: 20px;
+      gap: 20px;
+    }
+
+    .dashboard {
+      width: 250px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .conference {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Enhanced Dial pad styling */
+    #dialpad-section {
+      margin-top: 15px;
+      padding: 15px;
+      border: 2px solid lightgrey;
+      background-color: rgba(0,0,0,0.015);
+      border-radius: 30px;
+    }
+
+    .dialpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .dialpad button {
+      width: 30px;
+      height: 30px;
+      font-size: 15px !important;
+      color: #555;
+      border: 1px solid black !important;
+      border-radius: 50% !important;
+      background: transparent !important;
+      margin: 5px;
+      padding: 7.5px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dialpad button:hover {
+      background-color: rgba(0,0,0,0.05) !important;
+    }
+
+    #clear-btn {
+      grid-column: span 3;
+      border-radius: 3px !important;
+      background-color: transparent !important;
+      color: red !important;
+      border: 1px solid red !important;
+      height: auto;
+      width: 100px;
+      margin-top: 10px;
+      font-size: 16px !important;
+    }
+
+    .dialpad-btn {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    #call-btn {
+      flex: 1; 
+      border-radius: 3px !important;
+      background-color: transparent !important;
+      color: blue !important;
+      border: 1px solid blue !important;
+      height: auto;
+      max-width: 150px;
+      margin-top: 10px;
+      font-size: 16px !important;
+      text-align: center;
+    }
+
+    #hangup-btn {
+      flex: 1; 
+      border-radius: 3px !important;
+      background-color: transparent !important;
+      color: red !important;
+      border: 1px solid red !important;
+      height: auto;
+      max-width: 150px;
+      margin-top: 10px;
+      font-size: 16px !important;
+      text-align: center;
+    }
+
+    #extension {
+      border: 0;
+      border-bottom: 1px solid black;
+      background-color: transparent;
+      padding: 2px 2px 10px 2px;
+      margin-bottom: 10px;
+      font-size: 16px !important;
+      text-align: center;
+      outline: 0;
+      width: 100%;
+    }
+
+    /* Enhanced button styles */
+    #call-form button {
+      background-color: transparent;
+      border: 1px solid black;
+      border-radius: 3px;
+      padding: 5px 5px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 20px !important;
+      transition: all 0.2s ease;
+    }
+
+    #call-form button:hover {
+      background-color: rgba(0,0,0,0.05) !important;
+    }
+
+    #answer-btn {
+      color: green !important;
+      border-color: green !important;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+    }
+
+    /* Add a debug log area */
+    #log-container {
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 100px;
+      overflow-y: auto;
+      font-family: monospace;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="logo">Nenasasa Callcenter</div>
+    <div class="call-status">
+      <div class="call-info" id="active-call">No active call</div>
+    </div>
+    <div class="user">
+      <div class="status-indicator"></div>
+      <span id="username">Not Registered</span>
+    </div>
+  </div>
+
+  <div id="main">
+    <!-- left side -->
+    <div class="dashboard">
+      <h1>SIP.js WebRTC Demo</h1>
+      <form id="create-sip-form" onsubmit="try { onCreateSipFormSubmit(this); } catch(e) { console.error('sip config form error', e) } finally { return false; }">
+        <br/>
+        <br/>
+        <label for="sip-username">Username:</label>
+        <input type="text" id="sip-username" name="sipUsername" placeholder="e.g. 1000" value="1000" required/>
+        <br/>
+        <br/>
+        <button type="submit" id="register-btn">Register SIP User</button>
+      </form>
+
+      <form id="call-form" onsubmit="try { onDialerFormSubmit(this); } catch(e) { console.error('dialer form error', e) } finally { return false; }" style="display:none;">
+        <span>Make the call:</span><br/>
+        <input type="search" id="extension" name="extension" placeholder="Type an extension..." required/>
+        <br/>
+        <button id="clear-btn" onclick="clearDialedNumber()">Clear</button>
+        <br/>
+        <!-- Dial pad section -->
+        <div id="dialpad-section">
+          <span>Dial Pad:</span>
+          <div class="dialpad">
+            <button onclick="addDigit(event, '1')">1</button>
+            <button onclick="addDigit(event, '2')">2</button>
+            <button onclick="addDigit(event, '3')">3</button>
+            <button onclick="addDigit(event, '4')">4</button>
+            <button onclick="addDigit(event, '5')">5</button>
+            <button onclick="addDigit(event, '6')">6</button>
+            <button onclick="addDigit(event, '7')">7</button>
+            <button onclick="addDigit(event, '8')">8</button>
+            <button onclick="addDigit(event, '9')">9</button>
+            <button onclick="addDigit(event, '*')">*</button>
+            <button onclick="addDigit(event, '0')">0</button>
+            <button onclick="addDigit(event, '#')">#</button>
+          </div>
+          <div class="dialpad-btn">
+            <button type="submit" id="call-btn">Call</button>
+            <button type="button" id="hangup-btn" onclick="onHangupClick()">Hangup</button>
+          </div>
+        </div>
+        <br/>
+        <button type="button" id="answer-btn" onclick="onAnswerClick()" style="display:none;">Answer</button>
+        <button type="button" id="transfer-btn" onclick="transfer()">Transfer</button>
+        <br/>
+        <button type="button" id="mute-btn" onclick="mute()">Mute</button>
+        <button type="button" id="unmute-btn" onclick="unmute()">Unmute</button>
+        <br/>
+        <button type="button" id="hold-btn" onclick="hold()">Hold</button>
+        <button type="button" id="unhold-btn" onclick="unhold()">Unhold</button>
+        <br/>
+        <button type="button" id="unregister-btn" onclick="unregisterSipUser()">Unregister SIP User</button>
+        <br/> 
+      </form>
+      
+      <!-- Debug log area -->
+      <div id="log-container">
+        <div id="log"></div>
+      </div>
+    </div>
+
+    <!-- right side -->
+    <div class="conference">
+      <video id="local-video" width="250px" autoplay muted playsinline></video>
+      <video id="remote-video" width="800px" autoplay playsinline></video>
+    </div>
+  </div>
+
+  <footer>
+    &copy; InterIntel
+  </footer>
+
+  <!-- SIP.js v16 Library -->
+  <script src="https://cdn.jsdelivr.net/npm/sip.js@0.16.0/dist/sip.js"></script>
+
+  <script src="main.js"></script>
+</body>
+</html>
