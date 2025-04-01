@@ -72,7 +72,7 @@ const CONFIG = {
             this.credentials = {
                 username: formData.sipUsername.value,
                 domain: formData.sipDomain.value,
-                password: 1234,
+                password: formData.password.value,
                 wssServer: url
             };
 
