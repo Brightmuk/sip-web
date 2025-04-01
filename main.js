@@ -61,11 +61,19 @@ const CONFIG = {
         //     await this.setupUserAgent();
         // }
         async configureSIP(formData) {
+            var url;
+            
+            if(formData.sipPort.value.length>1){
+                url = "wss://"+formData.sipDomain.value+":"+formData.sipPort.value
+            }else{
+                url  = "wss://"+formData.sipDomain.value
+            }
+            console.log(url)
             this.credentials = {
                 username: formData.sipUsername.value,
                 domain: formData.sipDomain.value,
                 password: 1234,
-                wssServer: "wss://"+formData.sipDomain.value+":"+formData.sipPort.value
+                wssServer: url
             };
 
             UI.username.textContent = this.credentials.username;
