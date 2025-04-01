@@ -6,6 +6,7 @@
   <title>SIP.js WebRTC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="WebRTC video conference implementation using SIP.js v16">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     * {
       margin: 0;
@@ -13,7 +14,7 @@
       box-sizing: border-box;
       font-family: 'Poppins', sans-serif;
       font-size: 14px !important;
-      overflow-y: hidden;
+      overflow-x: hidden;
     }
 
     body {
@@ -68,7 +69,7 @@
       width: 100%;
       padding: 20px;
       gap: 20px;
-     
+
     }
 
     @media (min-width: 768px) {
@@ -77,13 +78,14 @@
       }
     }
 
-    .dashboard, .conference {
+    .dashboard,
+    .conference {
       background: white;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
       width: 100%;
-      
+
     }
 
     .conference {
@@ -97,17 +99,35 @@
     .dialpad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
+      place-items: center;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .call-controls{
+      display: flex;
+      justify-content: center;
       gap: 10px;
       margin-top: 15px;
     }
-
-    .dialpad button {
+    .call-controls button{
       width: 50px;
       height: 50px;
       font-size: 18px !important;
       color: #333;
       border: 1px solid #ccc;
       border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dialpad button {
+      width: 70px;
+      height: 70px;
+      font-size: 18px !important;
+      color: #333;
+      border: 1px solid #ccc;
+      border-radius: 70%;
       background: #fff;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -125,17 +145,19 @@
     }
 
     .dialpad-btn button {
-      flex: 1;
-
+      
       padding: 10px;
-      font-size: 16px;
-      border-radius: 5px;
+      font-size: 30px;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
       cursor: pointer;
       transition: all 0.3s;
     }
 
-    #call-btn {
-      background-color: #2563eb;
+
+    #call-btn,#answer-btn {
+      background-color: green;
       color: white;
       border: none;
     }
@@ -146,7 +168,8 @@
       border: none;
     }
 
-    #call-btn:hover, #hangup-btn:hover {
+    #call-btn:hover,
+    #hangup-btn:hover {
       opacity: 0.8;
     }
 
@@ -172,25 +195,46 @@
 
     /* Responsive Design */
     @media (max-width: 600px) {
-     
+
 
       .navbar .call-status {
         justify-content: center;
         margin-top: 10px;
       }
 
-      .dialpad button {
-        width: 45px;
-        height: 45px;
-        font-size: 16px !important;
-      }
 
-      .dashboard, .conference {
+      .dashboard,
+      .conference {
         max-width: 100%;
       }
     }
 
-    
+    input[type=text],
+    select {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    #register-btn,
+    #unregister-btn {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #unregister-btn {
+      background-color: orange;
+    }
   </style>
 </head>
 
@@ -199,7 +243,7 @@
   <div class="navbar">
     <div class="user">
       <div class="status-indicator"></div>
-      <span id="username">Not Registered</span>
+      <span id="username">NENACALL</span>
     </div>
     <div class="call-status">
       <div class="call-info" id="active-call">No active call</div>
@@ -210,30 +254,39 @@
   <div id="main">
     <!-- left side -->
     <div class="dashboard">
-      <h1>SIP.js WebRTC Demo</h1>
-      <form id="create-sip-form" onsubmit="try { onCreateSipFormSubmit(this); } catch(e) { console.error('sip config form error', e) } finally { return false; }">
-        <br/>
-        <br/>
-        <label for="sip-username">Username:</label>
-        <input type="text" id="sip-username" name="sipUsername" placeholder="e.g. 1000" value="1000" required/><br/><br/>
-        <label for="sip-domain">Domain:</label>
-        <input type="text" id="sip-domain" name="sipDomain" placeholder="e.g. 127.0.0.1" value="demo-server-uzwr.onrender.com" required/><br/><br/>
-        <label for="sip-port">Port:</label>
-        <input type="text" id="sip-port" name="sipPort" placeholder="e.g. 5060"/>
-        <br/>
-        <br/>
-        <button type="submit" id="register-btn">Register SIP User</button>
+
+      <form id="create-sip-form"
+        onsubmit="try { onCreateSipFormSubmit(this); } catch(e) { console.error('sip config form error', e) } finally { return false; }">
+
+        <h1>Register Sip User</h1>
+        <br />
+        <br />
+        
+        <label for="sip-username">Username</label>
+        <input type="text" id="sip-username" name="sipUsername" placeholder="e.g. 1000" value="1000" required />
+        <label for="sip-domain">Domain</label>
+        <input type="text" id="sip-domain" name="sipDomain" placeholder="e.g. 127.0.0.1"
+          value="demo-server-uzwr.onrender.com" required />
+        <label for="sip-port">Port</label>
+        <input type="text" id="sip-port" name="sipPort" placeholder="e.g. 5060" />
+        <br />
+        <br />
+        <button type="submit" id="register-btn">Register</button>
       </form>
 
-      <form id="call-form" onsubmit="try { onDialerFormSubmit(this); } catch(e) { console.error('dialer form error', e) } finally { return false; }" style="display:none;">
-        <span>Make the call:</span><br/>
-        <input type="search" id="extension" name="extension" placeholder="Type an extension..." required/>
-        <br/>
-        <button id="clear-btn" onclick="clearDialedNumber()">Clear</button>
-        <br/>
+      <form id="call-form"
+        onsubmit="try { onDialerFormSubmit(this); } catch(e) { console.error('dialer form error', e) } finally { return false; }"
+        style="display:none;">
+        <h1>Call</h1>
+        <br />
+        <br />
+        <input type="text" id="extension" name="extension" placeholder="Type an extension..." required />
+        <br />
+
+        <br />
         <!-- Dial pad section -->
         <div id="dialpad-section">
-          <span>Dial Pad:</span>
+
           <div class="dialpad">
             <button onclick="addDigit(event, '1')">1</button>
             <button onclick="addDigit(event, '2')">2</button>
@@ -249,24 +302,26 @@
             <button onclick="addDigit(event, '#')">#</button>
           </div>
           <div class="dialpad-btn">
-            <button type="submit" id="call-btn">Call</button>
-            <button type="button" id="hangup-btn" onclick="onHangupClick()">Hangup</button>
+            <button type="submit" id="call-btn"><i class="fa fa-phone"></i></button>
+            <button type="button" id="hangup-btn" onclick="onHangupClick()"><i class="fa fa-phone" style="font-size:36px;"></i></button>
           </div>
         </div>
-        <br/>
-        <button type="button" id="answer-btn" onclick="onAnswerClick()" style="display:none;">Answer</button>
-        <button type="button" id="transfer-btn" onclick="transfer()">Transfer</button>
-        <br/>
-        <button type="button" id="mute-btn" onclick="mute()">Mute</button>
-        <button type="button" id="unmute-btn" onclick="unmute()">Unmute</button>
-        <br/>
-        <button type="button" id="hold-btn" onclick="hold()">Hold</button>
-        <button type="button" id="unhold-btn" onclick="unhold()">Unhold</button>
-        <br/>
+        <br />
+        <div class="call-controls">
+        <button type="button" id="answer-btn" onclick="onAnswerClick()" style="display:none;"><i class="fa fa-phone"></i></button>
+        <button type="button" id="transfer-btn" onclick="transfer()"><i class="fa fa-arrow-up"></i></button>
+        <br />
+        <button type="button" id="mute-btn" onclick="mute()"><i class="fa fa-microphone-slash"></i></button>
+        <button type="button" id="unmute-btn" onclick="unmute()"><i class="fa fa-microphone"></i></button>
+        <br />
+        <button type="button" id="hold-btn" onclick="hold()"><i class="fa fa-pause"></i></button>
+        <button type="button" id="unhold-btn" onclick="unhold()"><i class="fa fa-play"></i></button>
+        <br />
+      </div>
         <button type="button" id="unregister-btn" onclick="unregisterSipUser()">Unregister SIP User</button>
-        <br/> 
+        <br />
       </form>
-      
+
       <!-- Debug log area -->
       <div id="log-container">
         <div id="log"></div>
@@ -286,4 +341,5 @@
 
   <script src="main.js"></script>
 </body>
+
 </html>
