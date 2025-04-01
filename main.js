@@ -65,7 +65,7 @@ const CONFIG = {
                 username: formData.sipUsername.value,
                 domain: formData.sipDomain.value,
                 password: 1234,
-                wssServer: "wss://"+formData.sipDomain.value+formData.sipPort.value
+                wssServer: "wss://"+formData.sipDomain.value+":"+formData.sipPort.value
             };
 
             UI.username.textContent = this.credentials.username;
